@@ -34,7 +34,7 @@ The repository is modularly designed for clean architecture:
 
 **1. Clone the repository:**
 ```bash
-git clone [https://github.com/abdallah-sobaih/Meme-Kanseri-Teshisi-ANN.git](https://github.com/abdallah-sobaih/Meme-Kanseri-Teshisi-ANN.git)
+git clone https://github.com/abdallah-sobaih/Meme-Kanseri-Teshisi-ANN.git
 cd Meme-Kanseri-Teshisi-ANN
 ```
 2. Create a virtual environment and activate it:
