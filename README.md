@@ -57,4 +57,5 @@ pip install -r requirements.txt
 The application will be available at http://127.0.0.1:8000
 
 👨‍💻 Author
+
 Abdallah Sobaih Software Developer & Computer Engineer
