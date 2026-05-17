@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BreastScan AI — Diagnostic Intelligence System</title>
+
+  <!-- Fonts: DM Sans (body) + DM Mono (values) + Playfair Display (accent) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Playfair+Display:wght@600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       DESIGN TOKENS
+    ═══════════════════════════════════════════════════════════════ */
+    :root {
+      --bg:           #07090f;
+      --surface:      #0d1117;
+      --surface-2:    #131924;
+      --surface-3:    #1a2334;
+      --border:       #1f2d42;
+      --border-light: #253448;
+
+      --blue:         #2f80ed;
+      --blue-soft:    #1a4a8a;
+      --blue-glow:    rgba(47, 128, 237, 0.18);
+      --cyan:         #56ccf2;
+
+      --text-primary:   #e8edf5;
+      --text-secondary: #7a8fa8;
+      --text-muted:     #3d5068;
+
+      --green:        #27ae60;
+      --green-soft:   rgba(39, 174, 96, 0.12);
+      --green-border: rgba(39, 174, 96, 0.35);
+      --red:          #eb5757;
+      --red-soft:     rgba(235, 87, 87, 0.12);
+      --red-border:   rgba(235, 87, 87, 0.35);
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-xl: 22px;
+
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+      --font-display: 'Playfair Display', serif;
+
+      --shadow-card: 0 4px 24px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-input: 0 0 0 3px var(--blue-glow);
+      --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       RESET & BASE
+    ═══════════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Subtle grid overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.25;
+    }
+
+    /* Ambient glow top-center */
+    body::after {
+      content: '';
+      position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
+      width: 900px; height: 500px;
+      background: radial-gradient(ellipse, rgba(47,128,237,0.09) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       LAYOUT
+    ═══════════════════════════════════════════════════════════════ */
+    .page-wrapper {
+      position: relative; z-index: 1;
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       HEADER
+    ═══════════════════════════════════════════════════════════════ */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 0 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 48px;
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--cyan) 100%);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 0 20px rgba(47,128,237,0.35);
+    }
+
+    .logo-text {
+      display: flex; flex-direction: column; gap: 1px;
+    }
+
+    .logo-name {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: var(--text-primary);
+    }
+
+    .logo-name span {
+      color: var(--blue);
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .header-badges {
+      display: flex; gap: 8px; align-items: center;
+    }
+
+    .badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--border-light);
+      color: var(--text-secondary);
+    }
+
+    .badge-blue {
+      border-color: var(--blue-soft);
+      color: var(--cyan);
+      background: rgba(47,128,237,0.07);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       HERO AREA
+    ═══════════════════════════════════════════════════════════════ */
+    .hero {
+      text-align: center;
+      margin-bottom: 52px;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--blue);
+      background: var(--blue-glow);
+      border: 1px solid rgba(47,128,237,0.25);
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+
+    .hero-tag::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 6px var(--blue);
+      animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 15px;
+      color: var(--text-secondary);
+      max-width: 560px;
+      margin: 0 auto;
+      font-weight: 300;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       MAIN CARD
+    ═══════════════════════════════════════════════════════════════ */
+    .main-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+
+    /* ─── Card toolbar ─── */
+    .card-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+
+    .toolbar-title {
+      font-size: 12px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    .btn-sample {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 18px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+      background: var(--surface-3);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-sample:hover {
+      border-color: var(--blue);
+      color: var(--cyan);
+      background: var(--blue-glow);
+    }
+
+    .btn-sample svg { flex-shrink: 0; }
+
+    /* ─── Feature groups ─── */
+    .form-body { padding: 32px 28px; }
+
+    .feature-group {
+      margin-bottom: 36px;
+    }
+
+    .feature-group:last-of-type { margin-bottom: 0; }
+
+    .group-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .group-icon {
+      width: 30px; height: 30px;
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .group-icon-mean   { background: rgba(47,128,237,0.15); }
+    .group-icon-se     { background: rgba(86,204,242,0.12); }
+    .group-icon-worst  { background: rgba(235,87,87,0.12); }
+
+    .group-label {
+      display: flex; flex-direction: column; gap: 2px;
+    }
+
+    .group-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .group-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .group-divider {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border) 0%, transparent 100%);
+    }
+
+    /* ─── Input grid ─── */
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px;
+    }
+
+    .input-field {
+      display: flex; flex-direction: column; gap: 5px;
+    }
+
+    .input-field label {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .input-field input {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      width: 100%;
+      transition: var(--transition);
+      outline: none;
+    }
+
+    .input-field input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .input-field input:hover {
+      border-color: var(--border-light);
+    }
+
+    .input-field input:focus {
+      border-color: var(--blue);
+      box-shadow: var(--shadow-input);
+      background: var(--surface-3);
+    }
+
+    .input-field input.has-value {
+      border-color: var(--border-light);
+      color: var(--cyan);
+    }
+
+    /* ─── Submit section ─── */
+    .submit-section {
+      padding: 28px;
+      border-top: 1px solid var(--border);
+      background: var(--surface-2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .submit-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      max-width: 380px;
+      line-height: 1.5;
+    }
+
+    .btn-predict {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 36px;
+      background: linear-gradient(135deg, var(--blue) 0%, #1a6dd4 100%);
+      border: none;
+      border-radius: var(--radius-md);
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 4px 18px rgba(47,128,237,0.35);
+      min-width: 200px;
+      justify-content: center;
+    }
+
+    .btn-predict:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(47,128,237,0.5);
+    }
+
+    .btn-predict:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn-predict:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .btn-predict.loading .spinner   { display: block; }
+    .btn-predict.loading .btn-icon  { display: none; }
+    .btn-predict.loading .btn-label { opacity: 0.75; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       RESULT PANEL
+    ═══════════════════════════════════════════════════════════════ */
+    .result-panel {
+      display: none;
+      margin-top: 28px;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-panel.visible { display: block; }
+
+    .result-panel.benign {
+      border-color: var(--green-border);
+      background: linear-gradient(135deg, var(--surface) 0%, rgba(39,174,96,0.04) 100%);
+    }
+
+    .result-panel.malignant {
+      border-color: var(--red-border);
+      background: linear-gradient(135deg, var(--surface) 0%, rgba(235,87,87,0.04) 100%);
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 32px 20px;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .result-verdict {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .verdict-icon {
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+
+    .benign .verdict-icon  { background: var(--green-soft); }
+    .malignant .verdict-icon { background: var(--red-soft); }
+
+    .verdict-text {}
+
+    .verdict-label {
+      font-size: 12px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .verdict-name {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .benign .verdict-name  { color: var(--green); }
+    .malignant .verdict-name { color: var(--red); }
+
+    .result-stats {
+      display: flex; gap: 24px; flex-wrap: wrap;
+    }
+
+    .stat-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 22px;
+      text-align: center;
+      min-width: 110px;
+    }
+
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.1;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-top: 4px;
+    }
+
+    /* Confidence bar */
+    .confidence-bar-wrap {
+      padding: 0 32px 28px;
+    }
+
+    .confidence-bar-label {
+      display: flex; justify-content: space-between;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .confidence-bar-track {
+      height: 6px;
+      background: var(--surface-3);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .confidence-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 0%;
+    }
+
+    .benign    .confidence-bar-fill { background: linear-gradient(90deg, #27ae60, #6fcf97); }
+    .malignant .confidence-bar-fill { background: linear-gradient(90deg, #eb5757, #f2994a); }
+
+    /* Result disclaimer */
+    .result-disclaimer {
+      padding: 16px 32px;
+      border-top: 1px solid var(--border);
+      background: var(--surface-2);
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+
+    .disclaimer-icon { flex-shrink: 0; color: var(--text-muted); margin-top: 1px; }
+
+    .result-disclaimer p {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       ERROR TOAST
+    ═══════════════════════════════════════════════════════════════ */
+    .error-toast {
+      display: none;
+      margin-top: 20px;
+      background: rgba(235,87,87,0.1);
+      border: 1px solid var(--red-border);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      font-size: 13px;
+      color: var(--red);
+      font-family: var(--font-mono);
+      animation: slideIn 0.3s ease forwards;
+    }
+
+    .error-toast.visible { display: block; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════════════════════════════ */
+    footer {
+      text-align: center;
+      margin-top: 52px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      line-height: 1.8;
+    }
+
+    footer a { color: var(--blue); text-decoration: none; }
+    footer a:hover { color: var(--cyan); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════════════════════ */
+    @media (max-width: 640px) {
+      .header-badges { display: none; }
+      .form-body { padding: 24px 16px; }
+      .card-toolbar { padding: 14px 16px; }
+      .submit-section { padding: 20px 16px; flex-direction: column; align-items: stretch; }
+      .btn-predict { width: 100%; }
+      .result-header { padding: 20px 20px 16px; }
+      .confidence-bar-wrap { padding: 0 20px 20px; }
+      .result-disclaimer { padding: 14px 20px; }
+      .input-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- ─── Header ─── -->
+  <header>
+    <div class="logo-group">
+      <div class="logo-icon">🔬</div>
+      <div class="logo-text">
+        <div class="logo-name">Breast<span>Scan</span> AI</div>
+        <div class="logo-sub">Diagnostic Intelligence System</div>
+      </div>
+    </div>
+    <div class="header-badges">
+      <span class="badge badge-blue">PyTorch M5</span>
+      <span class="badge">Wisconsin WDBC</span>
+      <span class="badge">v1.0.0</span>
+    </div>
+  </header>
+
+  <!-- ─── Hero ─── -->
+  <div class="hero">
+    <div class="hero-tag">Model Online · Architecture M5</div>
+    <h1>Breast Cancer <em>Diagnostic</em><br>Prediction Interface</h1>
+    <p>Enter 30 cytological features extracted from a digitised image of a fine needle aspirate (FNA) to receive a real-time classification from the trained deep learning model.</p>
+  </div>
+
+  <!-- ─── Main Card ─── -->
+  <div class="main-card">
+
+    <div class="card-toolbar">
+      <span class="toolbar-title">Feature Input Panel — 30 Parameters</span>
+      <button class="btn-sample" onclick="loadSampleData('malignant')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M12 2v20M2 12h20" stroke-linecap="round"/>
+        </svg>
+        Load Sample Data
+      </button>
+    </div>
+
+    <div class="form-body">
+
+      <!-- Group 1: Mean Values -->
+      <div class="feature-group">
+        <div class="group-header">
+          <div class="group-icon group-icon-mean">📊</div>
+          <div class="group-label">
+            <span class="group-title">Mean Values</span>
+            <span class="group-desc">Features 1–10 · Average cell nucleus measurements</span>
+          </div>
+          <div class="group-divider"></div>
+        </div>
+        <div class="input-grid" id="group-mean">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Group 2: Standard Errors -->
+      <div class="feature-group">
+        <div class="group-header">
+          <div class="group-icon group-icon-se">📐</div>
+          <div class="group-label">
+            <span class="group-title">Standard Errors</span>
+            <span class="group-desc">Features 11–20 · Measurement variability across cells</span>
+          </div>
+          <div class="group-divider"></div>
+        </div>
+        <div class="input-grid" id="group-se">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Group 3: Worst Values -->
+      <div class="feature-group">
+        <div class="group-header">
+          <div class="group-icon group-icon-worst">⚠️</div>
+          <div class="group-label">
+            <span class="group-title">Worst Values</span>
+            <span class="group-desc">Features 21–30 · Largest (most severe) measurements</span>
+          </div>
+          <div class="group-divider"></div>
+        </div>
+        <div class="input-grid" id="group-worst">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+    </div><!-- /form-body -->
+
+    <div class="submit-section">
+      <p class="submit-note">
+        All 30 fields are required. Values should match the scale used during model training
+        (raw feature values from the Wisconsin WDBC dataset).
+      </p>
+      <button class="btn-predict" id="predictBtn" onclick="runPrediction()">
+        <span class="spinner"></span>
+        <svg class="btn-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" stroke-linecap="round"/>
+        </svg>
+        <span class="btn-label">Run Diagnosis</span>
+      </button>
+    </div>
+
+  </div><!-- /main-card -->
+
+  <!-- ─── Error Toast ─── -->
+  <div class="error-toast" id="errorToast"></div>
+
+  <!-- ─── Result Panel ─── -->
+  <div class="result-panel" id="resultPanel">
+    <div class="result-header">
+      <div class="result-verdict">
+        <div class="verdict-icon" id="verdictIcon"></div>
+        <div class="verdict-text">
+          <div class="verdict-label">Model Diagnosis</div>
+          <div class="verdict-name" id="verdictName"></div>
+        </div>
+      </div>
+      <div class="result-stats">
+        <div class="stat-box">
+          <div class="stat-value" id="statConfidence">—</div>
+          <div class="stat-label">Confidence</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="statProbability">—</div>
+          <div class="stat-label">Probability</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="statLabel">—</div>
+          <div class="stat-label">Class Label</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="confidence-bar-wrap">
+      <div class="confidence-bar-label">
+        <span>Model Confidence</span>
+        <span id="barPct">—</span>
+      </div>
+      <div class="confidence-bar-track">
+        <div class="confidence-bar-fill" id="confidenceBar"></div>
+      </div>
+    </div>
+
+    <div class="result-disclaimer">
+      <svg class="disclaimer-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <p>
+        <strong>Clinical Disclaimer:</strong> This tool is a research and educational demonstration only.
+        It is not a certified medical device and must not be used as a substitute for professional clinical judgement.
+        All results require validation by a qualified healthcare professional.
+      </p>
+    </div>
+  </div><!-- /result-panel -->
+
+  <!-- ─── Footer ─── -->
+  <footer>
+    <p>BreastScan AI · Deep Learning Diagnostic Demo · Computer Engineering Capstone Project</p>
+    <p>Dataset: <a href="https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)" target="_blank">Wisconsin Breast Cancer (Diagnostic) WDBC</a> · Model: Architecture M5 · Framework: PyTorch</p>
+  </footer>
+
+</div><!-- /page-wrapper -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   FEATURE DEFINITIONS
+═══════════════════════════════════════════════════════════════ */
+const FEATURES = {
+  mean: [
+    { id: 'mean_radius',            label: 'Radius' },
+    { id: 'mean_texture',           label: 'Texture' },
+    { id: 'mean_perimeter',         label: 'Perimeter' },
+    { id: 'mean_area',              label: 'Area' },
+    { id: 'mean_smoothness',        label: 'Smoothness' },
+    { id: 'mean_compactness',       label: 'Compactness' },
+    { id: 'mean_concavity',         label: 'Concavity' },
+    { id: 'mean_concave_points',    label: 'Concave Pts' },
+    { id: 'mean_symmetry',          label: 'Symmetry' },
+    { id: 'mean_fractal_dimension', label: 'Fractal Dim.' },
+  ],
+  se: [
+    { id: 'se_radius',              label: 'Radius' },
+    { id: 'se_texture',             label: 'Texture' },
+    { id: 'se_perimeter',           label: 'Perimeter' },
+    { id: 'se_area',                label: 'Area' },
+    { id: 'se_smoothness',          label: 'Smoothness' },
+    { id: 'se_compactness',         label: 'Compactness' },
+    { id: 'se_concavity',           label: 'Concavity' },
+    { id: 'se_concave_points',      label: 'Concave Pts' },
+    { id: 'se_symmetry',            label: 'Symmetry' },
+    { id: 'se_fractal_dimension',   label: 'Fractal Dim.' },
+  ],
+  worst: [
+    { id: 'worst_radius',            label: 'Radius' },
+    { id: 'worst_texture',           label: 'Texture' },
+    { id: 'worst_perimeter',         label: 'Perimeter' },
+    { id: 'worst_area',              label: 'Area' },
+    { id: 'worst_smoothness',        label: 'Smoothness' },
+    { id: 'worst_compactness',       label: 'Compactness' },
+    { id: 'worst_concavity',         label: 'Concavity' },
+    { id: 'worst_concave_points',    label: 'Concave Pts' },
+    { id: 'worst_symmetry',          label: 'Symmetry' },
+    { id: 'worst_fractal_dimension', label: 'Fractal Dim.' },
+  ],
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   SAMPLE DATA (real WDBC cases)
+═══════════════════════════════════════════════════════════════ */
+const SAMPLES = {
+  // Patient 842302 — Malignant
+  malignant: {
+    mean_radius: 17.99, mean_texture: 10.38, mean_perimeter: 122.8,
+    mean_area: 1001.0, mean_smoothness: 0.1184, mean_compactness: 0.2776,
+    mean_concavity: 0.3001, mean_concave_points: 0.1471, mean_symmetry: 0.2419,
+    mean_fractal_dimension: 0.07871,
+    se_radius: 1.095, se_texture: 0.9053, se_perimeter: 8.589,
+    se_area: 153.4, se_smoothness: 0.006399, se_compactness: 0.04904,
+    se_concavity: 0.05373, se_concave_points: 0.01587, se_symmetry: 0.03003,
+    se_fractal_dimension: 0.006193,
+    worst_radius: 25.38, worst_texture: 17.33, worst_perimeter: 184.6,
+    worst_area: 2019.0, worst_smoothness: 0.1622, worst_compactness: 0.6656,
+    worst_concavity: 0.7119, worst_concave_points: 0.2654, worst_symmetry: 0.4601,
+    worst_fractal_dimension: 0.1189,
+  },
+  // Patient 842517 — Benign
+  benign: {
+    mean_radius: 13.54, mean_texture: 14.36, mean_perimeter: 87.46,
+    mean_area: 566.3, mean_smoothness: 0.09779, mean_compactness: 0.08129,
+    mean_concavity: 0.06664, mean_concave_points: 0.04781, mean_symmetry: 0.1885,
+    mean_fractal_dimension: 0.05766,
+    se_radius: 0.2699, se_texture: 0.7886, se_perimeter: 2.058,
+    se_area: 23.56, se_smoothness: 0.008462, se_compactness: 0.0146,
+    se_concavity: 0.02387, se_concave_points: 0.01315, se_symmetry: 0.0198,
+    se_fractal_dimension: 0.0023,
+    worst_radius: 15.11, worst_texture: 19.26, worst_perimeter: 99.7,
+    worst_area: 711.2, worst_smoothness: 0.144, worst_compactness: 0.1773,
+    worst_concavity: 0.239, worst_concave_points: 0.1288, worst_symmetry: 0.2977,
+    worst_fractal_dimension: 0.07259,
+  },
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   BUILD THE INPUT FORM DYNAMICALLY
+═══════════════════════════════════════════════════════════════ */
+function buildForm() {
+  const groupMap = { mean: 'group-mean', se: 'group-se', worst: 'group-worst' };
+
+  for (const [group, fields] of Object.entries(FEATURES)) {
+    const container = document.getElementById(groupMap[group]);
+    fields.forEach(({ id, label }) => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'input-field';
+      wrapper.innerHTML = `
+        <label for="${id}">${label}</label>
+        <input type="number" id="${id}" name="${id}"
+               step="any" placeholder="0.0000"
+               oninput="markFilled(this)" />
+      `;
+      container.appendChild(wrapper);
+    });
+  }
+}
+
+function markFilled(input) {
+  input.classList.toggle('has-value', input.value.trim() !== '');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SAMPLE DATA LOADER
+═══════════════════════════════════════════════════════════════ */
+function loadSampleData(type = 'malignant') {
+  // Toggle between samples on each click
+  const btn = document.querySelector('.btn-sample');
+  const isM = btn.dataset.current !== 'malignant';
+  const sample = isM ? SAMPLES.malignant : SAMPLES.benign;
+  btn.dataset.current = isM ? 'malignant' : 'benign';
+
+  for (const [key, val] of Object.entries(sample)) {
+    const el = document.getElementById(key);
+    if (el) {
+      el.value = val;
+      el.classList.add('has-value');
+    }
+  }
+
+  // Reset any previous results
+  hideResult();
+  hideError();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PREDICTION CALL
+═══════════════════════════════════════════════════════════════ */
+async function runPrediction() {
+  hideError();
+  hideResult();
+
+  const payload = {};
+  const allFields = [...FEATURES.mean, ...FEATURES.se, ...FEATURES.worst];
+
+  // Validate all fields
+  const missing = [];
+  for (const { id } of allFields) {
+    const el = document.getElementById(id);
+    const val = parseFloat(el.value);
+    if (el.value.trim() === '' || isNaN(val)) {
+      missing.push(id);
+    } else {
+      payload[id] = val;
+    }
+  }
+
+  if (missing.length > 0) {
+    showError(`⚠ ${missing.length} field(s) are missing or invalid. Please fill all 30 inputs before running the diagnosis.`);
+    // Highlight missing inputs
+    missing.forEach(id => {
+      const el = document.getElementById(id);
+      el.style.borderColor = 'var(--red)';
+      setTimeout(() => el.style.borderColor = '', 3000);
+    });
+    return;
+  }
+
+  // Set loading state
+  const btn = document.getElementById('predictBtn');
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  try {
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://127.0.0.1:8000/predict'
+      : '/predict';
+
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.detail || `Server error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    displayResult(data);
+
+  } catch (err) {
+    showError(`❌ ${err.message}`);
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RENDER RESULT
+═══════════════════════════════════════════════════════════════ */
+function displayResult(data) {
+  const panel     = document.getElementById('resultPanel');
+  const isMal     = data.label === 1;
+
+  panel.className = `result-panel visible ${isMal ? 'malignant' : 'benign'}`;
+
+  document.getElementById('verdictIcon').textContent = isMal ? '⚠️' : '✅';
+  document.getElementById('verdictName').textContent = data.diagnosis;
+  document.getElementById('statConfidence').textContent  = data.confidence.toFixed(1) + '%';
+  document.getElementById('statProbability').textContent = data.probability.toFixed(4);
+  document.getElementById('statLabel').textContent       = data.label === 1 ? '1 · M' : '0 · B';
+
+  const barEl = document.getElementById('confidenceBar');
+  const barPct = document.getElementById('barPct');
+  barEl.style.width = '0%';
+  barPct.textContent = data.confidence.toFixed(1) + '%';
+
+  // Animate bar after a brief delay
+  requestAnimationFrame(() => {
+    setTimeout(() => { barEl.style.width = data.confidence.toFixed(1) + '%'; }, 80);
+  });
+
+  // Scroll result into view
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UI HELPERS
+═══════════════════════════════════════════════════════════════ */
+function showError(msg) {
+  const el = document.getElementById('errorToast');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+function hideError() {
+  document.getElementById('errorToast').classList.remove('visible');
+}
+
+function hideResult() {
+  const panel = document.getElementById('resultPanel');
+  panel.classList.remove('visible');
+  panel.style.display = 'none';
+  // Force display re-trigger on next show
+  requestAnimationFrame(() => { panel.style.display = ''; });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  buildForm();
+});
+</script>
+</body>
+</html>
