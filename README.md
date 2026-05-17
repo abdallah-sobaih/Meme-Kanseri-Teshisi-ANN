@@ -55,5 +55,6 @@ pip install -r requirements.txt
    python -m uvicorn main:app --reload
   ```
 The application will be available at http://127.0.0.1:8000
+
 👨‍💻 Author
 Abdallah Sobaih Software Developer & Computer Engineer
